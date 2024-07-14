@@ -1,0 +1,32 @@
+{
+    "name": "filippo-toso/microvel",
+    "description": "A micro implementation of a Laravel based framework.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Filippo Toso",
+            "email": "filippo.toso@creativepark.it"
+        }
+    ],
+    "require": {
+        "php": "^7.2 || ^8.0 || ^9.0",
+        "illuminate/events": "^8.0",
+        "illuminate/routing": "^8.0",
+        "illuminate/database": "^8.0",
+        "illuminate/view": "^8.0",
+        "illuminate/config": "^8.0",
+        "illuminate/pagination": "^8.0",
+        "illuminate/filesystem": "^8.0",
+        "illuminate/container": "^8.0",
+        "league/flysystem": "^1.1",
+        "symfony/var-dumper": "^5.4",
+        "illuminate/translation": "^8.83",
+        "illuminate/validation": "^8.0",
+        "illuminate/support": "^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "FilippoToso\\Microvel\\": "src"
+        }
+    }
+}
