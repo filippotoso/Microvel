@@ -13,9 +13,11 @@ class View
             ->make($view, $data, $mergeData)
             ->render();
     }
-}
 
-function view($view, $data = [], $mergeData = [])
-{
-    return View::render($view, $data, $mergeData);
+    public static function __callStatic($name, $arguments)
+    {
+        return Framework::instance()
+            ->view()
+            ->$name(...$arguments);
+    }
 }
