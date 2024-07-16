@@ -148,9 +148,9 @@ class Framework
         return $this->storage->disk($disk);
     }
 
-    public function view($view, $data = [], $mergeData = [])
+    public function view()
     {
-        return $this->view->make($view, $data, $mergeData);
+        return $this->view;
     }
 
     public function config($key, $default = null)

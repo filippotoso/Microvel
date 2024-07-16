@@ -8,7 +8,10 @@ class View
 {
     public static function render($view, $data = [], $mergeData = [])
     {
-        return Framework::instance()->view($view, $data, $mergeData)->render();
+        return Framework::instance()
+            ->view()
+            ->make($view, $data, $mergeData)
+            ->render();
     }
 }
 
