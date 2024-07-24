@@ -24,6 +24,7 @@ use Illuminate\View\FileViewFinder;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\ViewErrorBag;
+use Throwable;
 
 class Framework
 {
@@ -163,7 +164,12 @@ class Framework
 
     public function process()
     {
-        $response = $this->router->dispatch($this->request);
+        try {
+            $response = $this->router->dispatch($this->request);
+        } catch (Throwable $th) {
+            $response = $this->container->make(\Illuminate\Contracts\Debug\ExceptionHandler::class)
+                ->render($this->request, $th);
+        }
 
         $response->send();
     }
@@ -223,7 +229,6 @@ class Framework
     {
         return $this->request;
     }
-
 
     /**
      * @return SessionManager
