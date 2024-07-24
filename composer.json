@@ -22,6 +22,7 @@
         "symfony/var-dumper": "^5.4",
         "illuminate/translation": "^8.83",
         "illuminate/validation": "^8.0",
+        "illuminate/session": "^8.0",
         "illuminate/support": "^8.0"
     },
     "autoload": {

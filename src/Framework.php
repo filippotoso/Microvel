@@ -22,6 +22,8 @@ use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Factory as ViewFactory;
 use Illuminate\View\FileViewFinder;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Session\SessionManager;
+use Illuminate\Support\ViewErrorBag;
 
 class Framework
 {
@@ -36,6 +38,8 @@ class Framework
     protected array $config;
     protected FilesystemManager $storage;
     protected ViewFactory $view;
+    protected BladeCompiler $blade;
+    protected SessionManager $session;
 
     public function __construct($config)
     {
@@ -62,7 +66,7 @@ class Framework
         date_default_timezone_set($this->config('app.timezone', 'UTC'));
 
         $this->container->instance('app', $this->container);
-        $this->container['config'] = new Config(['filesystems' => $this->config('filesystems')]);
+        $this->container['config'] = new Config($this->config);
 
         $this->storage = (new FilesystemManager($this->container));
         $this->container->instance(FilesystemFactory::class, $this->storage);
@@ -75,15 +79,17 @@ class Framework
         $filesystem = new Filesystem;
 
         $viewResolver = new EngineResolver;
-        $bladeCompiler = new BladeCompiler($filesystem, $pathToCompiledTemplates);
+        $this->blade = new BladeCompiler($filesystem, $pathToCompiledTemplates);
 
-        $viewResolver->register('blade', function () use ($bladeCompiler) {
-            return new CompilerEngine($bladeCompiler);
+        $viewResolver->register('blade', function () {
+            return new CompilerEngine($this->blade);
         });
 
         $viewFinder = new FileViewFinder($filesystem, $pathsToTemplates);
         $this->view = new ViewFactory($viewResolver, $viewFinder, $this->events);
         $this->view->setContainer($this->container);
+
+        $this->view->share('errors', new ViewErrorBag);
 
         Facade::setFacadeApplication($this->container);
 
@@ -99,7 +105,7 @@ class Framework
             })::getFacadeAccessor()
         );
 
-        $this->container->instance(\Illuminate\View\Compilers\BladeCompiler::class, $bladeCompiler);
+        $this->container->instance(\Illuminate\View\Compilers\BladeCompiler::class, $this->blade);
         $this->container->alias(
             \Illuminate\View\Compilers\BladeCompiler::class,
             (new class extends \Illuminate\Support\Facades\Blade
@@ -122,6 +128,25 @@ class Framework
         Paginator::currentPageResolver(function ($pageName = 'page') {
             return $_REQUEST[$pageName] ?? 1;
         });
+
+        // Setup session
+        $this->container['files'] = new Filesystem;
+
+        $this->session = new SessionManager($this->container);
+        $this->container['session.store'] = $this->session->driver();
+        $this->container['session'] = $this->session;
+
+        // In order to maintain the session between requests, we need to populate the
+        // session ID from the supplied cookie
+        $cookieName = $this->container['session']->getName();
+
+        if (isset($_COOKIE[$cookieName])) {
+            if ($sessionId = $_COOKIE[$cookieName]) {
+                $this->container['session']->setId($sessionId);
+            }
+        }
+
+        $this->container['session']->start();
     }
 
     public static function instance()
@@ -143,14 +168,29 @@ class Framework
         $response->send();
     }
 
+    /**
+     * @param string $disk
+     * @return Filesystem
+     */
     public function storage($disk = 'local')
     {
         return $this->storage->disk($disk);
     }
 
+    /**
+     * @return ViewFactory
+     */
     public function view()
     {
         return $this->view;
+    }
+
+    /**
+     * @return BladeCompiler
+     */
+    public function blade()
+    {
+        return $this->blade;
     }
 
     public function config($key, $default = null)
@@ -158,14 +198,38 @@ class Framework
         return Arr::get($this->config, $key, $default);
     }
 
+    /**
+     * @param string|null $connection
+     * @return Connection
+     */
     public function database($connection = null)
     {
         $connection = $connection ?? $this->config('database.default') ?? 'default';
         return $this->database->getConnection($connection);
     }
 
+    /**
+     * @return Routing
+     */
     public function router()
     {
         return $this->router;
+    }
+
+    /**
+     * @return Request
+     */
+    public function request()
+    {
+        return $this->request;
+    }
+
+
+    /**
+     * @return SessionManager
+     */
+    public function session()
+    {
+        return $this->session;
     }
 }
