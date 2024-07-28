@@ -133,21 +133,24 @@ class Framework
         // Setup session
         $this->container['files'] = new Filesystem;
 
-        $this->session = new SessionManager($this->container);
-        $this->container['session.store'] = $this->session->driver();
-        $this->container['session'] = $this->session;
+        if ($this->config['session'] ?? false) {
 
-        // In order to maintain the session between requests, we need to populate the
-        // session ID from the supplied cookie
-        $cookieName = $this->container['session']->getName();
+            $this->session = new SessionManager($this->container);
+            $this->container['session.store'] = $this->session->driver();
+            $this->container['session'] = $this->session;
 
-        if (isset($_COOKIE[$cookieName])) {
-            if ($sessionId = $_COOKIE[$cookieName]) {
-                $this->container['session']->setId($sessionId);
+            // In order to maintain the session between requests, we need to populate the
+            // session ID from the supplied cookie
+            $cookieName = $this->container['session']->getName();
+
+            if (isset($_COOKIE[$cookieName])) {
+                if ($sessionId = $_COOKIE[$cookieName]) {
+                    $this->container['session']->setId($sessionId);
+                }
             }
-        }
 
-        $this->container['session']->start();
+            $this->container['session']->start();
+        }
     }
 
     public static function instance()
@@ -235,6 +238,6 @@ class Framework
      */
     public function session()
     {
-        return $this->session;
+        return $this->container['session'];
     }
 }
