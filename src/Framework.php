@@ -24,6 +24,7 @@ use Illuminate\View\FileViewFinder;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\ViewErrorBag;
+use Illuminate\View\Engines\PhpEngine;
 use Throwable;
 
 class Framework
@@ -41,6 +42,7 @@ class Framework
     protected ViewFactory $view;
     protected BladeCompiler $blade;
     protected SessionManager $session;
+    protected UrlGenerator $url;
 
     public function __construct($config)
     {
@@ -57,6 +59,9 @@ class Framework
         $this->events = new Dispatcher($this->container);
 
         $this->router = new Routing($this->events, $this->container);
+
+        // Will be replaced in static::routes()
+        //$this->url = new UrlGenerator($this->router->getRoutes(), $this->request);
 
         $this->database = new DatabaseManager;
         $this->database->setEventDispatcher($this->events);
@@ -162,7 +167,11 @@ class Framework
     {
         include($routesFile);
 
-        $this->redirector = new Redirector(new UrlGenerator($this->router->getRoutes(), $this->request));
+        $this->router->getRoutes()->refreshNameLookups();
+
+        $this->url = new UrlGenerator($this->router->getRoutes(), $this->request);
+
+        $this->redirector = new Redirector($this->url);
     }
 
     public function process()
@@ -239,5 +248,13 @@ class Framework
     public function session()
     {
         return $this->container['session'];
+    }
+
+    /**
+     * @return UrlGenerator
+     */
+    public function url()
+    {
+        return $this->url;
     }
 }
