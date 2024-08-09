@@ -2,15 +2,15 @@
 
 namespace FilippoToso\Microvel\Support;
 
+/**
+ * @method static string storage($path = null)
+ * @method static string resources($path = null)
+ * @method static string assets($path = null)
+ */
 class Path
 {
-    public static function resource($path = null)
+    public static function __callStatic($name, $arguments)
     {
-        return realpath(rtrim(Config::get('paths.resources'), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR));
-    }
-
-    public static function storage($path = null)
-    {
-        return realpath(rtrim(Config::get('paths.storage'), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR));
+        return realpath(rtrim(Config::get('paths.' . $name), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($arguments[0] ?? null, DIRECTORY_SEPARATOR));
     }
 }

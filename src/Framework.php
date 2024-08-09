@@ -79,7 +79,7 @@ class Framework
 
         $this->container->instance(Application::class, $this->container);
 
-        $pathsToTemplates = [Path::resource('views')];
+        $pathsToTemplates = [Path::resources('views')];
         $pathToCompiledTemplates = Path::storage('framework/views');
 
         $filesystem = new Filesystem;

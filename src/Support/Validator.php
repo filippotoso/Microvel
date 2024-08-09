@@ -27,7 +27,7 @@ class Validator
 
     public function process($rules, $data = null, $messages = [])
     {
-        $messages = empty($messages) ? Arr::dot(include(Path::resource('messages/validation.php'))) : $messages;
+        $messages = empty($messages) ? Arr::dot(include(Path::resources('messages/validation.php'))) : $messages;
 
         if (is_null($data)) {
             $request = Request::capture();
