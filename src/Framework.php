@@ -24,7 +24,7 @@ use Illuminate\View\FileViewFinder;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\ViewErrorBag;
-use Illuminate\View\Engines\PhpEngine;
+use Illuminate\Mail\MailManager;
 use Throwable;
 
 class Framework
@@ -156,6 +156,18 @@ class Framework
 
             $this->container['session']->start();
         }
+
+        $this->container->singleton('mail.manager', function ($app) {
+            return new MailManager($app);
+        });
+
+        $this->container->bind('mailer', function ($app) {
+            return $app->make('mail.manager')->mailer();
+        });
+
+        $this->container->singleton('events', function ($app) {
+            return (new Dispatcher($app));
+        });
     }
 
     public static function instance()
